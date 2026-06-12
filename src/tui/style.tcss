@@ -20,7 +20,7 @@ Screen {
 
 .field-label {
     margin-top: 1;
-    bold: true;
+    text-style: bold;
     color: $text-muted;
 }
 

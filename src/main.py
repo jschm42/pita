@@ -5,10 +5,15 @@ and launches the Textual TUI interface.
 """
 
 import logging
+import os
+import sys
 
 from dotenv import load_dotenv
 
-from src.tui.app import PitaApp
+# Enforce parent directory to be in PYTHONPATH to resolve 'src' package imports when run directly
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from src.tui.app import PitaApp  # noqa: E402
 
 # Configure logging to write to a local file, keeping stdout clean for the TUI
 logging.basicConfig(
