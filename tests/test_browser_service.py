@@ -49,9 +49,13 @@ async def test_browser_navigation_and_dom_prune(local_server: MockServer) -> Non
 
         # If ids were not parsed in data-qa-id, check fallback to elements details
         if not username_node:
-            username_node = next((el for el in elements if el.id == "username-input"), None)
+            username_node = next(
+                (el for el in elements if el.id == "username-input"), None
+            )
         if not password_node:
-            password_node = next((el for el in elements if el.id == "password-input"), None)
+            password_node = next(
+                (el for el in elements if el.id == "password-input"), None
+            )
         if not submit_node:
             submit_node = next((el for el in elements if el.id == "login-btn"), None)
 

@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 class QABrowserAgent:
     """Orchestrates the Perceive-Act-Verify loop to test web pages using an LLM."""
 
-    def __init__(
-        self, browser_service: BrowserService, llm_client: LLMClient
-    ) -> None:
+    def __init__(self, browser_service: BrowserService, llm_client: LLMClient) -> None:
         """Initializes the orchestrator.
 
         Args:
@@ -157,13 +155,17 @@ class QABrowserAgent:
         task_description: str,
         action_history_descriptions: list[str],
         notify: Callable[[str, dict[str, Any]], Any],
+        credentials: dict[str, str] | None = None,
     ) -> tuple[ActionIntent, ElementNode | None, str, list[ElementNode]]:
         """Handles perception, screenshot, and consulting the LLM for the step."""
-        notify("status", {
-            "state": f"Step {current_step}: Perceiving page DOM...",
-            "step": current_step,
-            "max_steps": max_steps
-        })
+        notify(
+            "status",
+            {
+                "state": f"Step {current_step}: Perceiving page DOM...",
+                "step": current_step,
+                "max_steps": max_steps,
+            },
+        )
 
         # Perceive: Extract visible interactive elements
         elements = await self.browser_service.prune_dom()
@@ -182,16 +184,20 @@ class QABrowserAgent:
                 current_url=current_url,
                 elements=elements,
                 history=action_history_descriptions,
+                credentials=credentials,
             )
         except LLMResponseParseError as parse_err:
             error_msg = f"LLM responded with invalid JSON format: {parse_err}"
             notify("log", {"message": error_msg, "level": "error"})
             raise AgentError(error_msg) from parse_err
 
-        notify("log", {
-            "message": f"LLM Reasoning (Step {current_step}): {action_intent.reasoning}",
-            "level": "thought"
-        })
+        notify(
+            "log",
+            {
+                "message": f"LLM Reasoning (Step {current_step}): {action_intent.reasoning}",
+                "level": "thought",
+            },
+        )
 
         # Map element_id to Playwright Selector
         target_node: ElementNode | None = None
@@ -201,7 +207,11 @@ class QABrowserAgent:
                     target_node = el
                     break
 
-            if not target_node and action_intent.action_type in ("click", "type", "select"):
+            if not target_node and action_intent.action_type in (
+                "click",
+                "type",
+                "select",
+            ):
                 err_msg = f"LLM requested action on non-existent element: {action_intent.element_id}"
                 notify("log", {"message": err_msg, "level": "error"})
                 raise ActionExecutionError(err_msg)
@@ -218,44 +228,58 @@ class QABrowserAgent:
         action_history_descriptions: list[str],
         step_reports: list[StepReport],
         notify: Callable[[str, dict[str, Any]], Any],
+        credentials: dict[str, str] | None = None,
     ) -> tuple[str, Literal["success", "failure", "continue"], str | None]:
         """Executes a single step in the perceive-act-verify loop."""
-        action_intent, target_node, screenshot_path, elements = await self._process_step(
+        (
+            action_intent,
+            target_node,
+            screenshot_path,
+            elements,
+        ) = await self._process_step(
             current_step=current_step,
             max_steps=max_steps,
             run_folder=run_folder,
             current_url=current_url,
             task_description=task_description,
             action_history_descriptions=action_history_descriptions,
-            notify=notify
+            notify=notify,
+            credentials=credentials,
         )
 
         action_text = self._get_history_text(action_intent, target_node)
         action_history_descriptions.append(action_text)
-        notify("log", {
-            "message": f"Step {current_step} Action: {action_text}",
-            "level": "action"
-        })
+        notify(
+            "log",
+            {
+                "message": f"Step {current_step} Action: {action_text}",
+                "level": "action",
+            },
+        )
 
         if action_intent.action_type == "done":
-            step_reports.append(StepReport(
-                step_number=current_step,
-                screenshot_path=screenshot_path,
-                dom_snapshot=elements,
-                action=action_intent,
-                success=True
-            ))
+            step_reports.append(
+                StepReport(
+                    step_number=current_step,
+                    screenshot_path=screenshot_path,
+                    dom_snapshot=elements,
+                    action=action_intent,
+                    success=True,
+                )
+            )
             return current_url, "success", None
 
         if action_intent.action_type == "fail":
-            step_reports.append(StepReport(
-                step_number=current_step,
-                screenshot_path=screenshot_path,
-                dom_snapshot=elements,
-                action=action_intent,
-                success=False,
-                error_message=action_intent.reasoning
-            ))
+            step_reports.append(
+                StepReport(
+                    step_number=current_step,
+                    screenshot_path=screenshot_path,
+                    dom_snapshot=elements,
+                    action=action_intent,
+                    success=False,
+                    error_message=action_intent.reasoning,
+                )
+            )
             return current_url, "failure", action_intent.reasoning
 
         notify("status", {"state": f"Step {current_step}: Executing Action..."})
@@ -266,20 +290,22 @@ class QABrowserAgent:
         except Exception as action_err:
             step_success = False
             step_error = str(action_err)
-            notify("log", {
-                "message": f"Action execution failed: {step_error}",
-                "level": "error"
-            })
+            notify(
+                "log",
+                {"message": f"Action execution failed: {step_error}", "level": "error"},
+            )
             raise ActionExecutionError(step_error) from action_err
 
-        step_reports.append(StepReport(
-            step_number=current_step,
-            screenshot_path=screenshot_path,
-            dom_snapshot=elements,
-            action=action_intent,
-            success=step_success,
-            error_message=step_error
-        ))
+        step_reports.append(
+            StepReport(
+                step_number=current_step,
+                screenshot_path=screenshot_path,
+                dom_snapshot=elements,
+                action=action_intent,
+                success=step_success,
+                error_message=step_error,
+            )
+        )
 
         assert self.browser_service.page is not None
         new_url = self.browser_service.page.url
@@ -309,6 +335,7 @@ class QABrowserAgent:
         task_description: str,
         max_steps: int = 15,
         reports_dir: str = "test_reports",
+        credentials: dict[str, str] | None = None,
         update_callback: Callable[[str, dict[str, Any]], Any] | None = None,
     ) -> TestReport:
         """Runs the autonomous QA loop to achieve the specified task goal.
@@ -318,11 +345,13 @@ class QABrowserAgent:
             task_description: Description of the goal to achieve.
             max_steps: Maximum step limit before timeout.
             reports_dir: Directory where reports/traces/screenshots are saved.
+            credentials: Optional key-value credentials dictionary.
             update_callback: Hook to notify TUI or console log of changes.
 
         Returns:
             The compiled TestReport metadata.
         """
+
         def notify(event_type: str, data: dict[str, Any]) -> None:
             if update_callback:
                 try:
@@ -334,7 +363,7 @@ class QABrowserAgent:
             target_url=target_url,
             task_description=task_description,
             reports_dir=reports_dir,
-            notify=notify
+            notify=notify,
         )
 
         step_reports: list[StepReport] = []
@@ -345,7 +374,11 @@ class QABrowserAgent:
 
         try:
             while current_step <= max_steps:
-                current_url, step_result, step_error_msg = await self._execute_single_step(
+                (
+                    current_url,
+                    step_result,
+                    step_error_msg,
+                ) = await self._execute_single_step(
                     current_step=current_step,
                     max_steps=max_steps,
                     run_folder=run_folder,
@@ -353,7 +386,8 @@ class QABrowserAgent:
                     task_description=task_description,
                     action_history_descriptions=action_history_descriptions,
                     step_reports=step_reports,
-                    notify=notify
+                    notify=notify,
+                    credentials=credentials,
                 )
 
                 if step_result == "success":
@@ -374,10 +408,10 @@ class QABrowserAgent:
             final_status = "failure"
             final_error = str(e)
             logger.exception("Agent run loop encountered critical error")
-            notify("log", {
-                "message": f"Critical run error: {final_error}",
-                "level": "error"
-            })
+            notify(
+                "log",
+                {"message": f"Critical run error: {final_error}", "level": "error"},
+            )
         finally:
             trace_path = await self._cleanup_run(trace_path, notify)
 

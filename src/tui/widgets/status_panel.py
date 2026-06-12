@@ -35,7 +35,9 @@ class StatusPanel(Static):
         elif "Step" in self.state_desc:
             state_style = "bold cyan"
 
-        table.add_row("Agent State:", f"[{state_style}]{self.state_desc}[/{state_style}]")
+        table.add_row(
+            "Agent State:", f"[{state_style}]{self.state_desc}[/{state_style}]"
+        )
         table.add_row("Current URL:", self.current_url)
 
         step_text = f"{self.step} / {self.max_steps}" if self.step > 0 else "N/A"

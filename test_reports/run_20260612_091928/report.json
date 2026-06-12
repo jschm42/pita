@@ -1,0 +1,22 @@
+{
+  "target_url": "https://test.com",
+  "task_description": "Click login and complete",
+  "steps": [
+    {
+      "step_number": 1,
+      "screenshot_path": "C:\\Users\\jschmitz\\DEV\\git-repositories\\pita\\test_reports\\run_20260612_091928\\step_1.png",
+      "dom_snapshot": [],
+      "action": {
+        "reasoning": "Task done",
+        "action_type": "done",
+        "element_id": null,
+        "value": null
+      },
+      "success": true,
+      "error_message": null
+    }
+  ],
+  "status": "success",
+  "error_message": null,
+  "trace_path": "C:\\Users\\jschmitz\\DEV\\git-repositories\\pita\\test_reports\\run_20260612_091928\\trace.zip"
+}

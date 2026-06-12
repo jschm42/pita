@@ -123,7 +123,9 @@ class MockServer:
         """
         self.server = ThreadingHTTPServer((host, port), MockServerRequestHandler)
         host_val = self.server.server_address[0]
-        self.host = host_val.decode("utf-8") if isinstance(host_val, bytes) else str(host_val)
+        self.host = (
+            host_val.decode("utf-8") if isinstance(host_val, bytes) else str(host_val)
+        )
         self.port = self.server.server_address[1]
         self._thread: threading.Thread | None = None
 

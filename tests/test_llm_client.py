@@ -25,7 +25,9 @@ def test_clean_and_parse_json_valid() -> None:
     assert parsed["action_type"] == "wait"
 
     # Braced JSON with prefix text
-    conversational_json = 'Here is the action: {"reasoning": "thought", "action_type": "done"}'
+    conversational_json = (
+        'Here is the action: {"reasoning": "thought", "action_type": "done"}'
+    )
     parsed = client._clean_and_parse_json(conversational_json)
     assert parsed["action_type"] == "done"
 
@@ -58,15 +60,13 @@ async def test_get_next_action_call(mock_acompletion: AsyncMock) -> None:
 
     client = LLMClient(model="openai/gpt-4o")
 
-    elements = [
-        ElementNode(id="qa-2", tag="button", text="Submit", selector="button")
-    ]
+    elements = [ElementNode(id="qa-2", tag="button", text="Submit", selector="button")]
 
     action = await client.get_next_action(
         task_description="Submit the form",
         current_url="https://test.com/form",
         elements=elements,
-        history=["Step 1 text"]
+        history=["Step 1 text"],
     )
 
     assert action.action_type == "click"
@@ -78,3 +78,43 @@ async def test_get_next_action_call(mock_acompletion: AsyncMock) -> None:
     called_kwargs = mock_acompletion.call_args[1]
     assert called_kwargs["model"] == "openai/gpt-4o"
     assert called_kwargs["temperature"] == 0.1
+
+
+@pytest.mark.asyncio
+@patch("src.infrastructure.llm_client.litellm.acompletion")
+async def test_get_next_action_with_credentials(
+    mock_acompletion: AsyncMock,
+) -> None:
+    """Verifies that credentials format helper works and credentials are in prompt."""
+    mock_response = MagicMock()
+    mock_choice = MagicMock()
+    mock_choice.message.content = (
+        '{"reasoning": "Goal achieved", "action_type": "done"}'
+    )
+    mock_response.choices = [mock_choice]
+    mock_acompletion.return_value = mock_response
+
+    client = LLMClient(model="openai/gpt-4o")
+
+    # Directly check formatting helper
+    formatted = client._format_credentials(
+        {"username": "admin", "password": "password123"}
+    )
+    assert "username: 'admin'" in formatted
+    assert "password: 'password123'" in formatted
+
+    await client.get_next_action(
+        task_description="Submit form",
+        current_url="https://test.com/login",
+        elements=[],
+        history=[],
+        credentials={"username": "admin", "password": "password123"},
+    )
+
+    mock_acompletion.assert_called_once()
+    called_kwargs = mock_acompletion.call_args[1]
+    messages = called_kwargs["messages"]
+    user_prompt = messages[1]["content"]
+    assert "AVAILABLE CREDENTIALS" in user_prompt
+    assert "username: 'admin'" in user_prompt
+    assert "password: 'password123'" in user_prompt

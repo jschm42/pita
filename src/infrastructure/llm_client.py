@@ -78,7 +78,7 @@ class LLMClient:
         if not history:
             return "No actions executed yet (First Step)."
 
-        return "\n".join(f"{i+1}. {step}" for i, step in enumerate(history))
+        return "\n".join(f"{i + 1}. {step}" for i, step in enumerate(history))
 
     def _clean_and_parse_json(self, text: str) -> dict[str, Any]:
         """Extracts and parses JSON from the LLM response text.
@@ -122,12 +122,23 @@ class LLMClient:
                 f"Failed to parse JSON from LLM output. Raw output: '{text}'"
             ) from e
 
+    def _format_credentials(self, credentials: dict[str, str] | None) -> str:
+        """Formats credentials mapping into a text summary for LLM prompt."""
+        if not credentials:
+            return "No preconfigured credentials available for this run."
+
+        lines = []
+        for key, value in credentials.items():
+            lines.append(f"- {key}: '{value}'")
+        return "\n".join(lines)
+
     async def get_next_action(
         self,
         task_description: str,
         current_url: str,
         elements: list[ElementNode],
         history: list[str],
+        credentials: dict[str, str] | None = None,
     ) -> ActionIntent:
         """Queries the LLM for the next action to perform.
 
@@ -136,16 +147,20 @@ class LLMClient:
             current_url: The current URL of the page being tested.
             elements: List of visible interactive element nodes.
             history: Human-readable logs of steps executed so far.
+            credentials: Key-value credentials dictionary.
 
         Returns:
             The parsed ActionIntent object.
         """
         formatted_elements = self._format_elements_list(elements)
         formatted_history = self._format_history_list(history)
+        formatted_creds = self._format_credentials(credentials)
 
         user_prompt = (
             f"GOAL: {task_description}\n\n"
             f"CURRENT URL: {current_url}\n\n"
+            f"AVAILABLE CREDENTIALS (use for inputs if required by form fields):\n"
+            f"{formatted_creds}\n\n"
             f"VISIBLE INTERACTIVE ELEMENTS:\n"
             f"{formatted_elements}\n\n"
             f"HISTORY OF ACTIONS EXECUTION:\n"

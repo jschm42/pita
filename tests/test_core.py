@@ -42,7 +42,9 @@ async def test_agent_run_loop_success() -> None:
 
     # First step returns elements, second step is just termination
     elements_step_1 = [
-        ElementNode(id="qa-1", tag="button", text="Login", selector="[data-qa-id='qa-1']")
+        ElementNode(
+            id="qa-1", tag="button", text="Login", selector="[data-qa-id='qa-1']"
+        )
     ]
     mock_browser.prune_dom = AsyncMock(return_value=elements_step_1)
     mock_browser.capture_screenshot = AsyncMock()
@@ -55,19 +57,15 @@ async def test_agent_run_loop_success() -> None:
 
     # LLM responses: Step 1 click button, Step 2 mark done
     intent_1 = ActionIntent(
-        reasoning="Need to click login",
-        action_type="click",
-        element_id="qa-1"
+        reasoning="Need to click login", action_type="click", element_id="qa-1"
     )
-    intent_2 = ActionIntent(
-        reasoning="Goal achieved",
-        action_type="done"
-    )
+    intent_2 = ActionIntent(reasoning="Goal achieved", action_type="done")
     mock_llm.get_next_action = AsyncMock(side_effect=[intent_1, intent_2])
 
     agent = QABrowserAgent(mock_browser, mock_llm)
 
     callback_events = []
+
     def callback(event_type: str, data: dict[str, Any]) -> None:
         callback_events.append((event_type, data))
 
@@ -75,7 +73,7 @@ async def test_agent_run_loop_success() -> None:
         target_url="https://test.com",
         task_description="Click login and complete",
         max_steps=5,
-        update_callback=callback
+        update_callback=callback,
     )
 
     # Verification assertions
@@ -91,3 +89,36 @@ async def test_agent_run_loop_success() -> None:
     # Check that status and log events were fired
     assert any(event == "status" for event, _ in callback_events)
     assert any(event == "log" for event, _ in callback_events)
+
+
+@pytest.mark.asyncio
+async def test_agent_run_loop_passes_credentials() -> None:
+    """Verifies that credentials dictionary is passed to the LLM client during the run."""
+    # Setup mocks
+    mock_browser = MagicMock(spec=BrowserService)
+    mock_browser.page = MagicMock()
+    mock_browser.navigate = AsyncMock(return_value="https://test.com/home")
+    mock_browser.prune_dom = AsyncMock(return_value=[])
+    mock_browser.capture_screenshot = AsyncMock()
+    mock_browser.start_tracing = AsyncMock()
+    mock_browser.stop_tracing = AsyncMock()
+    mock_browser.stop = AsyncMock()
+
+    mock_llm = MagicMock(spec=LLMClient)
+    intent = ActionIntent(reasoning="Task done", action_type="done")
+    mock_llm.get_next_action = AsyncMock(return_value=intent)
+
+    agent = QABrowserAgent(mock_browser, mock_llm)
+    credentials = {"username": "test_user", "password": "test_password"}
+
+    await agent.run_task(
+        target_url="https://test.com",
+        task_description="Click login and complete",
+        max_steps=5,
+        credentials=credentials,
+    )
+
+    # Verify that get_next_action was called with the credentials dict
+    mock_llm.get_next_action.assert_called_once()
+    called_kwargs = mock_llm.get_next_action.call_args[1]
+    assert called_kwargs["credentials"] == credentials

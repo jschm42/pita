@@ -1,0 +1,18 @@
+{
+  "name": "Lumigen",
+  "target_url": "https://192.168.178.28:7003/",
+  "model": "deepseek-v4-flash",
+  "api_base": null,
+  "max_steps": 15,
+  "credentials": {
+    "username": "admin",
+    "password": "anno1503"
+  },
+  "tests": [
+    {
+      "name": "Test Gallery",
+      "description": "Test if the gallery ist showing correctly",
+      "max_steps": null
+    }
+  ]
+}

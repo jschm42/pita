@@ -42,9 +42,9 @@ class ActionIntent(BaseModel):
     reasoning: str = Field(
         description="Detailed thought process explaining why this action is chosen"
     )
-    action_type: Literal["click", "type", "select", "scroll", "wait", "done", "fail"] = (
-        Field(description="Type of action to execute")
-    )
+    action_type: Literal[
+        "click", "type", "select", "scroll", "wait", "done", "fail"
+    ] = Field(description="Type of action to execute")
     element_id: str | None = Field(
         default=None, description="The 'id' of the ElementNode to interact with"
     )
@@ -102,4 +102,34 @@ class TestReport(BaseModel):
     )
     trace_path: str | None = Field(
         default=None, description="Path to the zip trace file"
+    )
+
+
+class TestCase(BaseModel):
+    """Represents a preconfigured test case scenario for a project."""
+
+    __test__ = False
+
+    name: str = Field(description="Name of the test case")
+    description: str = Field(description="Natural language instruction prompt")
+    max_steps: int | None = Field(
+        default=None, description="Optional limit override for loop steps"
+    )
+
+
+class ProjectConfig(BaseModel):
+    """Represents the settings and preconfigured tests for a project."""
+
+    name: str = Field(description="Unique name of the project")
+    target_url: str = Field(description="Base target URL of the application")
+    model: str = Field(default="openai/gpt-4o", description="LiteLLM model identifier")
+    api_base: str | None = Field(
+        default=None, description="Optional local Ollama base URL"
+    )
+    max_steps: int = Field(default=15, description="Default step limit for runs")
+    credentials: dict[str, str] = Field(
+        default_factory=dict, description="Key-value credentials mapping"
+    )
+    tests: list[TestCase] = Field(
+        default_factory=list, description="List of preconfigured test cases"
     )

@@ -1,53 +1,116 @@
+/* Main Application Styles */
+
 Screen {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 1fr 2fr;
     background: $background;
 }
 
-#left-container {
-    padding: 1 2;
-    border-right: solid $primary;
-    background: $surface;
-    layout: vertical;
-    overflow-y: auto;
+Button {
+    height: 1;
+    border: none;
+    padding: 0 1;
+    margin: 0;
 }
 
-#right-container {
+#main-container {
     layout: vertical;
     padding: 1;
 }
 
-.field-label {
-    margin-top: 1;
+/* TabbedContent Adjustments */
+TabbedContent {
+    height: 1fr;
+}
+
+TabPane {
+    padding: 1 2;
+    background: $surface-darken-1;
+    height: 1fr;
+}
+
+.panel-title {
     text-style: bold;
-    color: $text-muted;
-}
-
-Input {
+    color: $accent;
+    margin-top: 1;
     margin-bottom: 1;
-    border: tall $primary-darken-2;
 }
 
-Input:focus {
-    border: tall $accent;
+/* Tab 1: Project Manager Layout */
+#manage-projects-container {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 1fr 1.5fr;
+    height: 100%;
 }
 
-#buttons-row {
+#projects-list-col {
+    padding-right: 2;
+    border-right: solid $primary;
+    height: 100%;
+}
+
+#list_projects {
+    height: 1fr;
+    border: solid $primary;
+    background: $surface;
+}
+
+.buttons-row-small {
     layout: horizontal;
     height: auto;
-    margin-top: 2;
+    margin-top: 1;
+    margin-bottom: 1;
     align-horizontal: center;
 }
 
-#btn_start {
-    background: $success;
-    color: white;
+.buttons-row-small Button {
+    margin-right: 1;
+    width: auto;
 }
 
-#btn_stop {
-    background: $error;
-    color: white;
+#btn_load_project {
+    width: 100%;
+    margin-top: 1;
+}
+
+#project-details-col {
+    padding-left: 2;
+    height: 100%;
+}
+
+#project_details_view {
+    height: 1fr;
+}
+
+/* Tab 2: Test Case Runner Layout */
+#runner-panel-container {
+    layout: vertical;
+    height: 100%;
+    overflow-y: auto;
+}
+
+#runner_project_context {
+    background: $surface;
+    border: solid $primary;
+    padding: 1 2;
+    margin-bottom: 1;
+    height: 3;
+}
+
+#list_test_cases {
+    height: 12;
+    border: solid $primary;
+    background: $surface;
+    margin-bottom: 1;
+}
+
+#inp_custom_prompt {
+    margin-bottom: 1;
+}
+
+/* Tab 3: Monitor Layout */
+#monitor-container {
+    layout: vertical;
+    height: 100%;
 }
 
 StatusPanel {
@@ -55,8 +118,76 @@ StatusPanel {
     margin-bottom: 1;
 }
 
+#monitor-actions-row {
+    layout: horizontal;
+    height: auto;
+    margin-bottom: 1;
+    align-horizontal: center;
+}
+
+#btn_stop {
+    width: 100%;
+}
+
 LogViewer {
     height: 1fr;
     border: solid $primary;
+    background: $surface;
+}
+
+/* Modal Form Screen Styles */
+#form-container {
+    width: 80%;
+    height: 90%;
+    background: $surface;
+    border: double $accent;
+    padding: 2 4;
+    align: center middle;
+}
+
+#form-title {
+    text-align: center;
+    text-style: bold underline;
+    color: $accent;
+    margin-bottom: 2;
+}
+
+.form-section-title {
+    text-style: bold;
+    color: $secondary;
+    margin-top: 2;
+    margin-bottom: 1;
+    border-bottom: solid $primary;
+}
+
+.form-label {
+    text-style: bold;
+    color: $text-muted;
+    margin-top: 1;
+}
+
+#proj_tests_list {
+    height: 8;
+    border: solid $primary;
     background: $surface-darken-1;
+    margin-bottom: 1;
+}
+
+#test-actions-row {
+    layout: horizontal;
+    height: auto;
+    margin-bottom: 2;
+    align-horizontal: right;
+}
+
+#form-buttons-row {
+    layout: horizontal;
+    height: auto;
+    margin-top: 3;
+    align-horizontal: center;
+}
+
+#form-buttons-row Button {
+    margin-right: 2;
+    width: auto;
 }
