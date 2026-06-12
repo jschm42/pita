@@ -68,13 +68,18 @@ OPENAI_API_KEY=your-openai-api-key-here
 
 ## Running the Application
 
-### Launch the Terminal UI (TUI)
-Run the interactive console dashboard with:
+You can run **pita** either through its interactive Terminal User Interface (TUI) or directly from the shell using the Command Line Interface (CLI).
+
+---
+
+### Terminal UI (TUI)
+
+Launch the interactive console dashboard by running the entrypoint with no arguments:
 ```powershell
 python src/main.py
 ```
 
-### How to use the TUI:
+#### How to use the TUI:
 1. **Target URL**: Enter the web page you wish to test (e.g., a login form).
 2. **Task Description (Soft Prompt)**: Write your testing goal in plain English. Example:
    > *Log in with username 'tomsmith' and password 'SuperSecretPassword!', then verify that the secure area is loaded.*
@@ -88,6 +93,60 @@ python src/main.py
    - Press **Q** (or `Ctrl+C` in your terminal shell) to quit the application.
 
 ---
+
+### Command Line Interface (CLI)
+
+Running the entrypoint with one or more command-line arguments launches **pita** in CLI mode. This is ideal for headless execution, scripting, and CI/CD pipelines.
+
+```powershell
+python src/main.py [OPTIONS]
+```
+
+#### CLI Parameters
+
+| Option | Description |
+| :--- | :--- |
+| `--project TEXT` | Name of the saved project to load. |
+| `--test TEXT` | Name of a specific test case within the project to run (runs all tests if omitted). |
+| `--url TEXT` | Target URL for running an ad-hoc custom prompt (use with `--prompt`). |
+| `--prompt TEXT` | Custom natural language instruction to execute (use with `--url`). |
+| `--model TEXT` | LiteLLM model identifier override (e.g., `openai/gpt-4o`). |
+| `--api-base TEXT` | Optional local Ollama base URL override. |
+| `--max-steps INTEGER` | Maximum step limit override. |
+| `--headless / --no-headless` | Force headless or headed browser mode. |
+| `--ignore-https-errors / --no-ignore-https-errors` | Ignore HTTPS certificate errors. |
+| `-c, --credential KEY=VALUE` | Credentials in KEY=VALUE format (can be specified multiple times). |
+| `--list-projects` | List all saved projects and exit. |
+| `--tui` | Explicitly launch the Textual TUI. |
+| `--debug` | Enable debug mode to show full stack traces on error. |
+
+#### CLI Examples
+
+- **List saved projects:**
+  ```powershell
+  python src/main.py --list-projects
+  ```
+
+- **Run all test cases for project "Lumigen":**
+  ```powershell
+  python src/main.py --project Lumigen
+  ```
+
+- **Run a single test case "Login Test" for project "Lumigen" in headed browser mode:**
+  ```powershell
+  python src/main.py --project Lumigen --test "Login Test" --no-headless
+  ```
+
+- **Run an ad-hoc custom test case on a target URL:**
+  ```powershell
+  python src/main.py --url https://example.com --prompt "Verify that the title is Example Domain"
+  ```
+
+- **Override credentials and model during execution:**
+  ```powershell
+  python src/main.py --project Lumigen -c username=admin -c password=secret --model openai/gpt-4o
+  ```
+
 
 ## Traces & Reports
 
