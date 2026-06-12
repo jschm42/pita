@@ -5,6 +5,7 @@
   "api_base": null,
   "max_steps": 15,
   "ignore_https_errors": true,
+  "headless": false,
   "credentials": {
     "username": "admin",
     "password": "anno1503"
@@ -12,8 +13,8 @@
   "tests": [
     {
       "name": "Test Gallery",
-      "description": "Test if the gallery ist showing correctly",
-      "max_steps": null
+      "description": "Click 'Gallery' Link to open gallery. In gallery zeitraumfilter 'time_preset' auf 'last_30_days' setzen und auf 'submit' Button klicken. prüfen ob bilder angezeigt werden",
+      "max_steps": 15
     }
   ]
 }

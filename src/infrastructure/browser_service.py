@@ -55,7 +55,9 @@ DOM_PRUNE_JS = """
             qaId = el.getAttribute('id');
         }
         if (!qaId) {
-            qaId = `qa-${index++}`;
+            do {
+                qaId = `qa-${index++}`;
+            } while (document.querySelector(`[data-qa-id="${qaId}"], [id="${qaId}"], [data-testid="${qaId}"]`));
             el.setAttribute('data-qa-id', qaId);
         }
 

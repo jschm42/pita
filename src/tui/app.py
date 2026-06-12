@@ -194,6 +194,10 @@ class PitaApp(App[None]):
                 "Ignore HTTPS Errors:",
                 "Yes" if config.ignore_https_errors else "No",
             )
+            table.add_row(
+                "Headless Browser:",
+                "Yes" if config.headless else "No",
+            )
 
             creds_keys = (
                 ", ".join(config.credentials.keys()) if config.credentials else "None"
@@ -489,7 +493,7 @@ class PitaApp(App[None]):
 
                 # Browser configuration parameters
                 browser_service = BrowserService(
-                    headless=True,
+                    headless=self.loaded_project.headless,
                     ignore_https_errors=self.loaded_project.ignore_https_errors,
                 )
                 llm_client = LLMClient(

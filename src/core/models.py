@@ -130,6 +130,9 @@ class ProjectConfig(BaseModel):
     ignore_https_errors: bool = Field(
         default=False, description="Whether to ignore HTTPS/SSL certificate errors"
     )
+    headless: bool = Field(
+        default=True, description="Whether to run the browser in headless mode"
+    )
     credentials: dict[str, str] = Field(
         default_factory=dict, description="Key-value credentials mapping"
     )

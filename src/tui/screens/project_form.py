@@ -33,6 +33,7 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
         api_val = self.config.api_base if (self.config and self.config.api_base) else ""
         steps_val = str(self.config.max_steps) if self.config else "15"
         ignore_https_val = self.config.ignore_https_errors if self.config else False
+        headless_val = self.config.headless if self.config else True
 
         # Prepopulate credentials if present
         user_val = ""
@@ -85,6 +86,12 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
                 "Ignore HTTPS/SSL Certificate Errors",
                 value=ignore_https_val,
                 id="proj_ignore_https",
+            )
+
+            yield Checkbox(
+                "Run Headless Browser (Invisible)",
+                value=headless_val,
+                id="proj_headless",
             )
 
             # Credentials sub-section
@@ -203,6 +210,7 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
         user = self.query_one("#proj_user", Input).value.strip()
         pw = self.query_one("#proj_pass", Input).value.strip()
         ignore_https = self.query_one("#proj_ignore_https", Checkbox).value
+        headless = self.query_one("#proj_headless", Checkbox).value
 
         if not name or not url:
             # Basic validation check
@@ -232,6 +240,7 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
             api_base=api_base if api_base else None,
             max_steps=max_steps,
             ignore_https_errors=ignore_https,
+            headless=headless,
             credentials=credentials,
             tests=self.tests,
         )
