@@ -102,13 +102,17 @@ DOM_PRUNE_JS = """
 class BrowserService:
     """Manages the Playwright browser session, user actions, and DOM extraction."""
 
-    def __init__(self, headless: bool = True) -> None:
+    def __init__(
+        self, headless: bool = True, ignore_https_errors: bool = False
+    ) -> None:
         """Initializes the browser service.
 
         Args:
             headless: Whether to run the browser in headless mode.
+            ignore_https_errors: Whether to ignore HTTPS/SSL certificate errors.
         """
         self.headless = headless
+        self.ignore_https_errors = ignore_https_errors
         self._playwright: Playwright | None = None
         self.browser: Browser | None = None
         self.context: BrowserContext | None = None
@@ -123,7 +127,8 @@ class BrowserService:
             )
             # Create a context with a standard desktop viewport size
             self.context = await self.browser.new_context(
-                viewport={"width": 1280, "height": 800}
+                viewport={"width": 1280, "height": 800},
+                ignore_https_errors=self.ignore_https_errors,
             )
             self.page = await self.context.new_page()
             logger.info("Browser session successfully started.")

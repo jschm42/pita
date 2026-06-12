@@ -153,6 +153,11 @@ class PitaApp(App[None]):
         # Populate project file list
         self._reload_projects_list()
 
+        # Auto-load the first project on startup if available
+        projects = project_manager.list_projects()
+        if projects:
+            self.run_worker(self._load_project_to_runner(projects[0], switch_tab=False))
+
     def _reload_projects_list(self) -> None:
         """Loads project files from disk and repopulates the options list."""
         self.list_projects.clear_options()
@@ -185,6 +190,10 @@ class PitaApp(App[None]):
             table.add_row("LiteLLM Model:", config.model)
             table.add_row("Base URL:", config.api_base or "Default API Base")
             table.add_row("Max Steps Limit:", str(config.max_steps))
+            table.add_row(
+                "Ignore HTTPS Errors:",
+                "Yes" if config.ignore_https_errors else "No",
+            )
 
             creds_keys = (
                 ", ".join(config.credentials.keys()) if config.credentials else "None"
@@ -320,6 +329,10 @@ class PitaApp(App[None]):
             try:
                 project_manager.delete_project(name)
                 self.log_viewer.write_log(f"Deleted project: {name}", "success")
+                if self.loaded_project and self.loaded_project.name == name:
+                    self.loaded_project = None
+                    self.runner_project_context.update("[bold yellow]No project loaded.[/bold yellow]")
+                    self.list_test_cases.clear_options()
                 self._reload_projects_list()
             except Exception as e:
                 self.log_viewer.write_log(f"Failed to delete project: {e}", "error")
@@ -355,10 +368,12 @@ class PitaApp(App[None]):
                     f"Updated project details: {config.name}", "success"
                 )
                 self._reload_projects_list()
+                if self.loaded_project and self.loaded_project.name == config.name:
+                    self.run_worker(self._load_project_to_runner(config.name, switch_tab=False))
             except Exception as e:
                 self.log_viewer.write_log(f"Failed to save project edits: {e}", "error")
 
-    async def _load_project_to_runner(self, name: str) -> None:
+    async def _load_project_to_runner(self, name: str, switch_tab: bool = True) -> None:
         """Loads project config into active state and populates the runner selection widgets."""
         try:
             self.loaded_project = project_manager.load_project(name)
@@ -384,13 +399,15 @@ class PitaApp(App[None]):
             )
 
             # Direct switch tabs for better navigation
-            self.tabs.active = "tab_execute_tests"
+            if switch_tab:
+                self.tabs.active = "tab_execute_tests"
         except Exception as e:
             self.log_viewer.write_log(f"Failed to load project: {e}", "error")
 
     async def start_tests_run(self, run_mode: str) -> None:
         """Starts test execution run in background."""
         if not self.loaded_project:
+            self.tabs.active = "tab_console_monitor"
             self.log_viewer.write_log(
                 "No project loaded. Please load a project first.", "error"
             )
@@ -471,7 +488,10 @@ class PitaApp(App[None]):
                 self.log_viewer.write_log(test_banner, "info")
 
                 # Browser configuration parameters
-                browser_service = BrowserService(headless=True)
+                browser_service = BrowserService(
+                    headless=True,
+                    ignore_https_errors=self.loaded_project.ignore_https_errors,
+                )
                 llm_client = LLMClient(
                     model=self.loaded_project.model,
                     api_base=self.loaded_project.api_base,

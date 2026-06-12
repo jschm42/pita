@@ -1,9 +1,10 @@
 {
   "name": "Lumigen",
   "target_url": "https://192.168.178.28:7003/",
-  "model": "deepseek-v4-flash",
+  "model": "deepseek/deepseek-v4-flash",
   "api_base": null,
   "max_steps": 15,
+  "ignore_https_errors": true,
   "credentials": {
     "username": "admin",
     "password": "anno1503"

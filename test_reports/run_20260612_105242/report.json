@@ -1,0 +1,8 @@
+{
+  "target_url": "https://192.168.178.28:7003/",
+  "task_description": "Test if the gallery ist showing correctly",
+  "steps": [],
+  "status": "failure",
+  "error_message": "LLM request failed: litellm.BadRequestError: LLM Provider NOT provided. Pass in the LLM provider you are trying to call. You passed model=deepseek-v4-flash\n Pass model as E.g. For 'Huggingface' inference endpoints pass in `completion(model='huggingface/starcoder',..)` Learn more: https://docs.litellm.ai/docs/providers",
+  "trace_path": "C:\\Users\\jschmitz\\DEV\\git-repositories\\pita\\test_reports\\run_20260612_105242\\trace.zip"
+}

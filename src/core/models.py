@@ -127,6 +127,9 @@ class ProjectConfig(BaseModel):
         default=None, description="Optional local Ollama base URL"
     )
     max_steps: int = Field(default=15, description="Default step limit for runs")
+    ignore_https_errors: bool = Field(
+        default=False, description="Whether to ignore HTTPS/SSL certificate errors"
+    )
     credentials: dict[str, str] = Field(
         default_factory=dict, description="Key-value credentials mapping"
     )

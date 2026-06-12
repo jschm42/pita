@@ -3,7 +3,7 @@
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, OptionList
+from textual.widgets import Button, Checkbox, Input, Label, OptionList
 
 from src.core.models import ProjectConfig, TestCase
 
@@ -32,6 +32,7 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
         model_val = self.config.model if self.config else "openai/gpt-4o"
         api_val = self.config.api_base if (self.config and self.config.api_base) else ""
         steps_val = str(self.config.max_steps) if self.config else "15"
+        ignore_https_val = self.config.ignore_https_errors if self.config else False
 
         # Prepopulate credentials if present
         user_val = ""
@@ -78,6 +79,12 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
                 value=steps_val,
                 placeholder="Maximum step limit per test",
                 id="proj_max_steps",
+            )
+
+            yield Checkbox(
+                "Ignore HTTPS/SSL Certificate Errors",
+                value=ignore_https_val,
+                id="proj_ignore_https",
             )
 
             # Credentials sub-section
@@ -195,6 +202,7 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
 
         user = self.query_one("#proj_user", Input).value.strip()
         pw = self.query_one("#proj_pass", Input).value.strip()
+        ignore_https = self.query_one("#proj_ignore_https", Checkbox).value
 
         if not name or not url:
             # Basic validation check
@@ -223,6 +231,7 @@ class ProjectFormScreen(ModalScreen[ProjectConfig | None]):
             model=model,
             api_base=api_base if api_base else None,
             max_steps=max_steps,
+            ignore_https_errors=ignore_https,
             credentials=credentials,
             tests=self.tests,
         )
