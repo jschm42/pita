@@ -1,64 +1,64 @@
-# Best-Practices & Richtlinien für Python-Konsolenanwendungen (CLI)
+# Best Practices & Guidelines for Python Console Applications (CLIs)
 
-Dieses Dokument dient als Leitfaden und Regelwerk für Entwickler und AI-Agenten, die an dieser Python-Konsolenanwendung arbeiten. Es stellt sicher, dass der Code sauber, wartbar, robust und gut getestet bleibt.
+This document serves as a guideline and set of rules for developers and AI agents working on this Python console application. It ensures that the code remains clean, maintainable, robust, and well-tested.
 
 ---
 
-## 1. Clean Code & Architektur
+## 1. Clean Code & Architecture
 
-Eine gute Konsolenanwendung trennt die Benutzerschnittstelle (CLI-Interaktion) strikt von der Geschäftslogik (Core-Logik).
+A good console application strictly separates the user interface (CLI interaction/TUI) from the business logic (Core logic).
 
-### Projektstruktur
-Wir bevorzugen ein klares `src/`-Layout oder ein flaches Paketlayout mit getrennten Modulen:
-- **`cli.py` oder `__main__.py`**: Einstiegspunkt, Argument-Parsing, Konsolen-Ein-/Ausgabe.
-- **`core/` oder Kernmodule**: Reine Geschäftslogik, unabhängig von Konsolen-Ausgaben (`print`, `rich` etc.).
-- **`utils.js` / `helpers.py`**: Hilfsfunktionen.
+### Project Structure
+We prefer a clear `src/` layout or a flat package layout with separated modules:
+- **`cli.py` or `__main__.py`**: Entry point, argument parsing, console input/output.
+- **`core/` or Core modules**: Pure business logic, independent of console print outputs (`print`, `rich`, etc.).
+- **`utils.py` / `helpers.py`**: Helper functions.
 
 ```text
-projekt/
+project/
 ├── src/
-│   └── mein_projekt/
+│   └── my_project/
 │       ├── __init__.py
-│       ├── __main__.py      # Einstiegspunkt
-│       ├── cli.py           # CLI-Definition (click/typer/argparse)
-│       ├── core.py          # Reine Geschäftslogik
-│       └── utils.py         # Hilfsfunktionen
+│       ├── __main__.py      # Entry point
+│       ├── cli.py           # CLI definition (click/typer/argparse)
+│       ├── core.py          # Pure business logic
+│       └── utils.py         # Helper functions
 ├── tests/
 │   ├── __init__.py
 │   ├── test_cli.py
 │   └── test_core.py
-├── pyproject.toml           # Konfiguration (Ruff, Pytest, Dependency Management)
+├── pyproject.toml           # Configuration (Ruff, Pytest, Dependency Management)
 └── README.md
 ```
 
-### CLI-Frameworks
-Verwende moderne Bibliotheken statt manuellem `sys.argv`-Parsing:
-* **[Typer](https://typer.tiangolo.com/)** (Empfohlen für intuitive, typbasierte CLIs) oder **[Click](https://click.palletsprojects.com/)**.
-* **[Rich](https://rich.readthedocs.io/)** für ansprechende Konsolen-Ausgaben (Farben, Tabellen, Ladebalken).
+### CLI Frameworks
+Use modern libraries instead of manual `sys.argv` parsing:
+* **[Typer](https://typer.tiangolo.com/)** (Recommended for intuitive, type-based CLIs) or **[Click](https://click.palletsprojects.com/)**.
+* **[Rich](https://rich.readthedocs.io/)** for appealing console outputs (colors, tables, loading bars).
 
-### Regeln für sauberen Code (Clean Code)
-1. **Separation of Concerns**: Keine `print()`-Statements in der Kernlogik. Verwende dort stattdessen Rückgabewerte, Exceptions oder das Standard-Modul `logging`.
-2. **Type Hinting**: Alle Funktionssignaturen müssen konsequent typisiert werden.
+### Clean Code Rules
+1. **Separation of Concerns**: No `print()` statements in the core logic. Use return values, exceptions, or the standard `logging` module instead.
+2. **Type Hinting**: All function signatures must be consistently typed.
    ```python
-   def berechne_wert(faktor: float, basis: int = 10) -> float:
-       return basis * faktor
+   def calculate_value(factor: float, basis: int = 10) -> float:
+       return basis * factor
    ```
-3. **Explizite Fehlerbehandlung**:
-   - Fange keine generischen Exceptions (`except Exception:`), es sei denn, sie werden geloggt und das Programm wird kontrolliert beendet.
-   - Definiere eigene Exception-Klassen für fachliche Fehler.
-   - CLI-Ebene fängt Exceptions ab und gibt verständliche Fehlermeldungen (rot formatiert) aus, anstatt dem Benutzer einen Traceback zu zeigen (außer im `--debug` Modus).
-4. **Konfiguration**: Parameter und Pfade sollten über Umgebungsvariablen (z. B. mit `python-dotenv`) oder Konfigurationsdateien (TOML/JSON) konfigurierbar sein, nicht hardcodiert.
+3. **Explicit Error Handling**:
+   - Do not catch generic exceptions (`except Exception:`), unless they are logged and the program is terminated controlled.
+   - Define custom exception classes for business-level errors.
+   - The CLI layer catches exceptions and outputs user-friendly error messages (formatted in red) instead of showing a traceback (unless in `--debug` mode).
+4. **Configuration**: Parameters and paths should be configurable via environment variables (e.g., using `python-dotenv`) or configuration files (TOML/JSON), not hardcoded.
 
 ---
 
-## 2. Linting & Code-Qualität
+## 2. Linting & Code Quality
 
-Wir setzen automatisierte Tools ein, um Konsistenz und Fehlerfreiheit zu garantieren.
+We use automated tools to guarantee consistency and correctness.
 
 ### Ruff (Linter & Formatter)
-[Ruff](https://github.com/astral-sh/ruff) ersetzt Flake8, Black, isort und weitere Tools in einer extrem schnellen Go-Implementierung.
+[Ruff](https://github.com/astral-sh/ruff) replaces Flake8, Black, isort, and other tools with an extremely fast Go implementation.
 
-Konfiguration in der `pyproject.toml`:
+Configuration in `pyproject.toml`:
 ```toml
 [tool.ruff]
 line-length = 88
@@ -66,19 +66,19 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle-Fehler
-    "W",   # pycodestyle-Warnungen
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
     "F",   # Pyflakes
-    "I",   # isort (Import-Sortierung)
-    "C90", # mccabe (Komplexität)
+    "I",   # isort (import sorting)
+    "C90", # mccabe (complexity)
     "B",   # flake8-bugbear
-    "UP",  # pyupgrade (Modernere Syntax)
+    "UP",  # pyupgrade (modern syntax)
 ]
 ignore = []
 ```
 
-### Mypy (Statische Typprüfung)
-Statische Typisierung verhindert Laufzeitfehler vorab. Mypy sollte streng konfiguriert sein:
+### Mypy (Static Type Checking)
+Static typing prevents runtime errors beforehand. Mypy should be strictly configured:
 ```toml
 [tool.mypy]
 python_version = "3.10"
@@ -87,7 +87,7 @@ warn_unused_configs = true
 ```
 
 ### Git Pre-Commit Hooks
-Nutze `pre-commit`, um Formatierung und Linting vor jedem Commit zu erzwingen:
+Use `pre-commit` to enforce formatting and linting before each commit:
 ```yaml
 # .pre-commit-config.yaml
 repos:
@@ -103,39 +103,39 @@ repos:
 
 ## 3. Testing
 
-Code ohne Tests gilt als fehlerhaft. CLI-Anwendungen erfordern sowohl Unittests für die Logik als auch Integrationstests für das Benutzerinterface.
+Code without tests is considered broken. CLI applications require both unit tests for logic and integration tests for the user interface.
 
-### Test-Framework
-Wir nutzen **[pytest](https://docs.pytest.org/)**.
+### Test Framework
+We use **[pytest](https://docs.pytest.org/)**.
 
-### Kernregeln fürs Testen
-1. **Logik isoliert testen**: Teste die Kernlogik in `core.py` ohne CLI-Aufrufe.
-2. **CLI-Interaktion testen**:
-   - Nutze `capsys` (Standard in Pytest), um Standard-Output (`stdout`) und Standard-Error (`stderr`) zu überprüfen.
-   - Nutze den `CliRunner` (wenn Click/Typer verwendet wird) für einfache Integrationstests.
-3. **Mocking**: Externe API-Aufrufe, Dateisystem-Zugriffe oder zeitintensive Prozesse müssen gemockt werden (z. B. mit `unittest.mock` oder `pytest-mock`).
+### Core Testing Rules
+1. **Test Logic in Isolation**: Test the core logic in `core.py` without triggering CLI inputs/outputs.
+2. **Test CLI Interaction**:
+   - Use `capsys` (standard in Pytest) to verify standard output (`stdout`) and standard error (`stderr`).
+   - Use the `CliRunner` (if using Click/Typer) for simple integration tests.
+3. **Mocking**: External API calls, file system accesses, or time-consuming processes must be mocked (e.g., with `unittest.mock` or `pytest-mock`).
 
-### Test-Beispiele
+### Testing Examples
 
-**CLI-Test mit Click/Typer:**
+**CLI Test with Click/Typer:**
 ```python
 from click.testing import CliRunner
-from mein_projekt.cli import app
+from my_project.cli import app
 
 def test_cli_greeting():
     runner = CliRunner()
     result = runner.invoke(app, ["--name", "Alice"])
     assert result.exit_code == 0
-    assert "Hallo Alice" in result.output
+    assert "Hello Alice" in result.output
 ```
 
-**CLI-Test mit Standard `capsys` & `pytest`:**
+**CLI Test with Standard `capsys` & `pytest`:**
 ```python
-from mein_projekt.cli import main
+from my_project.cli import main
 import pytest
 
 def test_main_output(capsys):
-    # Simuliere Programmablauf
+    # Simulate program execution
     main(["--version"])
     captured = capsys.readouterr()
     assert "Version 1.0.0" in captured.out
@@ -143,50 +143,50 @@ def test_main_output(capsys):
 
 ---
 
-## 4. Kommentierung & Dokumentation
+## 4. Commenting & Documentation
 
-Code sollte so geschrieben sein, dass er sich weitgehend selbst dokumentiert. Kommentare erklären das **Warum**, nicht das **Was**.
+Code should be written in a way that is mostly self-documenting. Comments explain the **Why**, not the **What**.
 
 ### Docstrings
-Jedes Modul, jede Klasse und jede öffentliche Methode/Funktion **muss** einen Docstring im **Google-Style** besitzen.
+Every module, class, and public method/function **must** have a Google-Style docstring.
 
 ```python
-def datei_einlesen(dateipfad: str, ignorieren_wenn_leer: bool = False) -> list[str]:
-    """Liest den Inhalt einer Textdatei zeilenweise ein.
+def read_file(file_path: str, ignore_if_empty: bool = False) -> list[str]:
+    """Reads the content of a text file line by line.
 
     Args:
-        dateipfad: Der absolute oder relative Pfad zur Zieldatei.
-        ignorieren_wenn_leer: Wenn True, wird bei einer leeren Datei kein
-            Fehler ausgelöst, sondern eine leere Liste zurückgegeben.
+        file_path: The absolute or relative path to the target file.
+        ignore_if_empty: If True, does not raise an error for an empty file,
+            instead returns an empty list.
 
     Returns:
-        Eine Liste von Strings, die die Zeilen der Datei darstellen.
+        A list of strings, representing the lines of the file.
 
     Raises:
-        FileNotFoundError: Wenn die Datei unter dem angegebenen Pfad nicht existiert.
-        ValueError: Wenn die Datei leer ist und `ignorieren_wenn_leer` False ist.
+        FileNotFoundError: If the file does not exist at the specified path.
+        ValueError: If the file is empty and `ignore_if_empty` is False.
     """
-    # Logik hier...
+    # Logic here...
 ```
 
-### Inline-Kommentare
-- Verwende Inline-Kommentare sparsam.
-- Beschreibe komplexe Algorithmen oder Designentscheidungen (z. B. *"Warum wurde dieser spezielle Workaround gewählt?"*).
-- Vermeide triviale Kommentare wie:
+### Inline Comments
+- Use inline comments sparingly.
+- Describe complex algorithms or design decisions (e.g., *"Why was this specific workaround chosen?"*).
+- Avoid trivial comments like:
   ```python
-  x = x + 1  # Erhöhe x um 1 (NEIN!)
+  x = x + 1  # Increase x by 1 (NO!)
   ```
 
-### Hilfe-Texte im Terminal
-Die CLI selbst ist die primäre Dokumentation für den Benutzer.
-- Stelle sicher, dass jeder CLI-Befehl und jedes Argument/Option einen aussagekräftigen `help`-Text besitzt.
-- Typer/Click generieren daraus automatisch die Hilfe-Seiten (`--help`).
+### Terminal Help Texts
+The CLI itself is the primary documentation for the user.
+- Ensure that every CLI command, argument, and option has a descriptive `help` text.
+- Typer/Click automatically generate help pages from these definitions (`--help`).
 
 ```python
 @app.command()
 def import_data(
-    file_path: Path = typer.Option(..., help="Pfad zur CSV-Datei, die importiert werden soll"),
+    file_path: Path = typer.Option(..., help="Path to the CSV file to import"),
 ):
-    """Importiert Kunden- und Bestelldaten aus einer CSV-Datei in die lokale Datenbank."""
+    """Imports customer and order data from a CSV file into the local database."""
     pass
 ```

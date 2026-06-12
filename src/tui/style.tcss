@@ -1,0 +1,62 @@
+Screen {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 1fr 2fr;
+    background: $background;
+}
+
+#left-container {
+    padding: 1 2;
+    border-right: solid $primary;
+    background: $surface;
+    layout: vertical;
+    overflow-y: auto;
+}
+
+#right-container {
+    layout: vertical;
+    padding: 1;
+}
+
+.field-label {
+    margin-top: 1;
+    bold: true;
+    color: $text-muted;
+}
+
+Input {
+    margin-bottom: 1;
+    border: tall $primary-darken-2;
+}
+
+Input:focus {
+    border: tall $accent;
+}
+
+#buttons-row {
+    layout: horizontal;
+    height: auto;
+    margin-top: 2;
+    align-horizontal: center;
+}
+
+#btn_start {
+    background: $success;
+    color: white;
+}
+
+#btn_stop {
+    background: $error;
+    color: white;
+}
+
+StatusPanel {
+    height: 14;
+    margin-bottom: 1;
+}
+
+LogViewer {
+    height: 1fr;
+    border: solid $primary;
+    background: $surface-darken-1;
+}
